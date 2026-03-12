@@ -3,7 +3,6 @@ import { menuAPI } from "../services/api";
 import { useCart } from "../context/CartContext";
 import RecommendationShelf from "../components/RecommendationShelf";
 import toast from "react-hot-toast";
-import RecommendationStrip from "../components/RecommendationStrip";
 
 const CATEGORY_LABELS = {
   all:     { label: "All",      emoji: "🍽️" },
