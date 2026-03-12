@@ -84,6 +84,9 @@ if (process.env.NODE_ENV === "development") {
 // Root health ping — for Render uptime checks
 app.get("/", (_req, res) => res.status(200).json({ status: "ok", app: "OrderFlow API" }));
 
+// Silence browser favicon requests
+app.get("/favicon.ico", (_req, res) => res.status(204).end());
+
 app.use("/api",              indexRouter);
 app.use("/api/auth",         require("./routes/auth"));
 app.use("/api/menu",         require("./routes/menu"));
