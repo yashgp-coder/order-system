@@ -33,7 +33,8 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    const newSocket = io(import.meta.env.VITE_SOCKET_URL || "", {
+    const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "https://order-system-sand.vercel.app";
+    const newSocket = io(SOCKET_URL, {
       transports: ["websocket", "polling"],
       withCredentials: true,
       reconnection: true,

@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { menuAPI } from "../services/api";
 import { useCart } from "../context/CartContext";
-import toast from "react-hot-toast";
 import RecommendationShelf from "../components/RecommendationShelf";
+import toast from "react-hot-toast";
+import RecommendationStrip from "../components/RecommendationStrip";
 
 const CATEGORY_LABELS = {
   all:     { label: "All",      emoji: "🍽️" },
@@ -41,9 +42,7 @@ export default function Menu() {
       if (search.trim()) params.set("search", search.trim());
       if (sort !== "popular") params.set("sort", sort);
 
-      const { data } = await menuAPI.getAll(
-        activeCategory !== "all" ? activeCategory : undefined
-      );
+      const { data } = await menuAPI.getAll(Object.fromEntries(params));
 
       // Client-side sort + search filter for snappy UI
       let filtered = data.items;
@@ -168,11 +167,13 @@ export default function Menu() {
           </span>
         </div>
       )}
+
+      {/* ── Recommendations (shown only when no search/filter active) ── */}
       {!search && activeCategory === "all" && (
-          <div style={{ marginBottom: "32px" }}>
-            <RecommendationShelf mode="personal" maxItems={8} />
-          </div>
-        )}
+        <div style={{ marginBottom: "32px" }}>
+          <RecommendationShelf mode="personal" maxItems={8} />
+        </div>
+      )}
 
       {/* ── Loading Skeleton ──────────────────────────────────────────────── */}
       {loading && (
