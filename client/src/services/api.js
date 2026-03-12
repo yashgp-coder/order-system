@@ -1,21 +1,24 @@
 import axios from "axios";
 
-// ── Base Instance ─────────────────────────────────────────────────────────────
+// ── Base URL ──────────────────────────────────────────────────────────────────
+// In development: Vite proxy rewrites /api → localhost:5000 (no env var needed)
+// In production:  VITE_API_URL must be set to your Render server URL at build time
+const BASE_URL =
+  import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL + "/api"
+    : "https://order-system-sand.vercel.app/api";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : "/api",
-  timeout: 15000, // 15 second timeout
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: BASE_URL,
+  timeout: 15000,
+  headers: { "Content-Type": "application/json" },
 });
 
 // ── Request Interceptor: Attach JWT token ─────────────────────────────────────
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
   (error) => Promise.reject(error)
@@ -28,18 +31,14 @@ api.interceptors.response.use(
     const { response } = error;
 
     if (response?.status === 401) {
-      // Token expired or invalid — clear local storage and redirect to login
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-
-      // Only redirect if not already on auth pages
       if (!window.location.pathname.includes("/login") &&
           !window.location.pathname.includes("/register")) {
         window.location.href = "/login";
       }
     }
 
-    // Normalize error message
     const message =
       response?.data?.message ||
       error.message ||
@@ -52,24 +51,22 @@ api.interceptors.response.use(
 // ── Auth Endpoints ────────────────────────────────────────────────────────────
 export const authAPI = {
   register: (data) => api.post("/auth/register", data),
-  login: (data) => api.post("/auth/login", data),
-  getMe: () => api.get("/auth/me"),
+  login:    (data) => api.post("/auth/login", data),
+  getMe:    ()     => api.get("/auth/me"),
 };
 
 // ── Menu Endpoints ────────────────────────────────────────────────────────────
 export const menuAPI = {
-  getAll: (category) =>
-    api.get("/menu", { params: category ? { category } : {} }),
-  getById: (id) => api.get(`/menu/${id}`),
+  getAll:  (params) => api.get("/menu", { params }),
+  getById: (id)     => api.get(`/menu/${id}`),
 };
 
 // ── Order Endpoints ───────────────────────────────────────────────────────────
 export const orderAPI = {
-  create: (data) => api.post("/orders", data),
-  getMyOrders: () => api.get("/orders/my"),
-  getById: (id) => api.get(`/orders/${id}`),
-  getQueuePosition: (id) => api.get(`/orders/${id}/queue`),
-  cancelOrder: (id) => api.patch(`/orders/${id}/cancel`),
+  create:           (data) => api.post("/orders", data),
+  getMyOrders:      ()     => api.get("/orders/my"),
+  getById:          (id)   => api.get(`/orders/${id}`),
+  cancelOrder:      (id)   => api.patch(`/orders/${id}/cancel`),
 };
 
 // ── Admin Endpoints ───────────────────────────────────────────────────────────
@@ -82,8 +79,9 @@ export const adminAPI = {
 
 // ── Recommendation Endpoints ──────────────────────────────────────────────────
 export const recommendAPI = {
-  getByItems:  (itemIds) => api.get("/recommendations",          { params: { itemIds: itemIds.join(",") } }),
   getPersonal: ()        => api.get("/recommendations/personal"),
+  getSimilar:  (itemIds) => api.get("/recommendations/similar", { params: { itemIds: itemIds.join(",") } }),
+  getTrending: ()        => api.get("/recommendations/trending"),
 };
 
 export default api;
