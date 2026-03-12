@@ -81,6 +81,9 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // ── API Routes ────────────────────────────────────────────────────────────────
+// Root health ping — for Render uptime checks
+app.get("/", (_req, res) => res.status(200).json({ status: "ok", app: "OrderFlow API" }));
+
 app.use("/api",              indexRouter);
 app.use("/api/auth",         require("./routes/auth"));
 app.use("/api/menu",         require("./routes/menu"));
@@ -132,3 +135,4 @@ process.on("uncaughtException", (err) => {
   console.error("❌ Uncaught Exception:", err.message);
   process.exit(1);
 });
+
